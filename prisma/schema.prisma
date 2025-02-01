@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model customers {
+  id        Int      @id @default(autoincrement())
+  c_name    String
+  address   String?
+  contact   String
+  email     String
+  type      String
+  createdAt DateTime @default(now())
+  userId    Int
+
+  @@index([userId], map: "customers_userId_fkey")
+}
+
+model expense {
+  id          Int      @id @default(autoincrement())
+  ref_no      String
+  title       String
+  amount      Float
+  qty         Int
+  uom         String
+  expenseDate DateTime
+  createdAt   DateTime @default(now())
+  userId      Int
+
+  @@index([userId], map: "expense_userId_fkey")
+}
+
+model purchase {
+  id            Int      @id @default(autoincrement())
+  title         String
+  amount        Float
+  quantity      Float
+  createdAt     DateTime @default(now())
+  userId        Int
+  datePurchased DateTime
+  supplierId    Int
+
+  @@index([supplierId], map: "purchase_supplierId_fkey")
+  @@index([userId], map: "purchase_userId_fkey")
+}
+
+model sale {
+  id         Int      @id @default(autoincrement())
+  title      String
+  amount     Float
+  quantity   Int
+  dateSold   DateTime
+  createdAt  DateTime @default(now())
+  userId     Int
+  customerId Int
+
+  @@index([customerId], map: "sale_customerId_fkey")
+  @@index([userId], map: "sale_userId_fkey")
+}
+
+model salepurchase {
+  id           Int      @id @default(autoincrement())
+  purchaseId   Int
+  saleId       Int
+  quantityUsed Float
+  uom          String
+  userId       Int
+  createdAt    DateTime @default(now())
+
+  @@index([purchaseId], map: "salePurchase_purchaseId_fkey")
+  @@index([saleId], map: "salePurchase_saleId_fkey")
+  @@index([userId], map: "salePurchase_userId_fkey")
+}
+
+model supplier {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  contact   String   @db.VarChar(15)
+  address   String   @db.VarChar(255)
+  email     String   @unique(map: "Supplier_email_key") @db.VarChar(50)
+  createdAt DateTime @default(now())
+  createdBy Int
+  updatedAt DateTime
+
+  @@index([createdBy], map: "supplier_createdBy_fkey")
+}
+
+model tenders {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(100)
+  createdAt   DateTime @default(now()) @db.Timestamp(6)
+  closingDate DateTime
+  content     String?
+  published   Boolean  @default(false)
+  country     String   @db.VarChar(50)
+  category    String   @db.VarChar(25)
+  authorId    Int
+
+  @@index([authorId], map: "Tenders_authorId_fkey")
+}
+
+model user {
+  id                   Int       @id @default(autoincrement())
+  username             String    @unique(map: "User_username_key") @db.VarChar(50)
+  email                String    @unique(map: "User_email_key") @db.VarChar(50)
+  password             String
+  emailVerified        Boolean   @default(false)
+  emailVerifiedAt      DateTime?
+  emailVerifToken      String?   @db.VarChar(255)
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+  role                 user_role @default(STAFF)
+  image                String?
+  createdAt            DateTime  @default(now())
+  updateAt             DateTime
+}
+
+enum user_role {
+  ADMIN
+  STAFF
+}
